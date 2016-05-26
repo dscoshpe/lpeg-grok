@@ -2,13 +2,13 @@
 	Test suite for the lpeg-grok module.
 --]]
 
-local grok = require("grok")
+local grok = require("lpeg-grok")
 
 local testcases = {
 	{
 		description = "p0f output",
-		pattern = "POF",
-		snippets = {
+		name = "POF",
+		patterns = {
 		   POF = "{| '[' {:date: (YEAR '/' MONTHNUM2 '/' MONTHDAY) :} ' ' {:time: TIME :} '] ' {:fields: {| (POFFIELD '|'?)+ |} :} |}",
 		   POFFIELD = "{| {:name: POFKEY :} '=' {:value: POFVALUE :} |}",
 		   POFKEY = "[^=]+",
@@ -36,8 +36,8 @@ local testcases = {
 	},
 	{
 		description = "simple syslog line",
-		pattern = "SYSLOGLINE",
-		samples = {
+		name = "SYSLOGLINE",
+		patterns = {
 			{ -- #1
 				input = "Mar 16 00:01:25 evita postfix/smtpd[1713]: connect from camomile.cloud9.net[168.100.1.3]",
 				verify = {
@@ -53,8 +53,8 @@ local testcases = {
 	},
 	{
 		description = "ietf 5424 syslog line",
-		pattern = "SYSLOG5424LINE",
-		samples = {
+		name = "SYSLOG5424LINE",
+		patterns = {
 			{ -- #1
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar"][id2 baz="something"] Hello, syslog.',
 				verify = {
@@ -219,14 +219,14 @@ end
 for i,tc in pairs(testcases) do
 	local failed = false
 	print("\n---> Test #"..i..": "..tc.description)
-	local p = grok.getPattern(tc.pattern, tc.snippets)
+	local p = grok:new(tc.patterns):compile(tc.name)
 
 	if p then
 		for j,s in pairs(tc.samples) do
 			if checkRecord(s.verify, p:match(s.input)) then print("---> ok") else failed = true end
 		end
 	else
-		print("ERROR: failed to gather a pattern for '"..tc.pattern.."' from the available snippets!")
+		print("ERROR: failed to gather a pattern for '"..tc.name.."' from the available patterns!")
 		failed = true
 	end
 
