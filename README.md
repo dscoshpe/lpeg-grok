@@ -4,6 +4,12 @@ Fast, efficient, and reusable pattern matching with Lua and [LPeg](http://www.in
 
 # Installation
 
+```sh
+git clone https://github.com/dscoshpe/lpeg-grok.git
+cd lpeg-grok
+luarocks make
+```
+
 # Usage
 
 ```lua
@@ -13,7 +19,7 @@ local grok = require("lpeg-grok")
 local my_grok = grok:new({MYPAT="custom patterns"})
 
 -- compile the pattern
-local my_pattern = grok:compile("MYPAT")
+local my_pattern = my_grok:compile("MYPAT")
 -- OR, do it all at once
 local my_pattern = require("lpeg-grok"):new({MYPAT="custom pattern"}):compile("MYPAT")
 
@@ -63,6 +69,8 @@ would return:
 
 # TODO
 
-* verify all of the patterns in the default collection
-* finish the testing script
-* implement installation procedure
+- [ ] verify all of the patterns in the default collection
+- [ ] finish the testing script (busted?)
+- [ ] implement installation procedure (luarocks)
+- [ ] add an optional 'optimize' step in case optimizing lpeg is used
+- [ ] add automated documentation
