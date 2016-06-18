@@ -71,6 +71,6 @@ would return:
 
 - [ ] verify all of the patterns in the default collection
 - [ ] finish the testing script (busted?)
-- [ ] implement installation procedure (luarocks)
+- [x] implement installation procedure (luarocks)
 - [ ] add an optional 'optimize' step in case optimizing lpeg is used
 - [ ] add automated documentation
