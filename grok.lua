@@ -8,9 +8,12 @@ local table = require("table")
 -- uses the LPeg 're' module
 local re = require("re")
 -- load the default patterns library
-local patterns = require("lpeg-grok.patterns")
+local patterns = require("luaml").decodeFile("patterns.lua")
 
-Grok = {}
+local Grok = {}
+
+-- the minimum length of any pattern name
+local min_length = 2
 
 -- recursively fetch all patterns included in the named pattern from the default library or the user supplied patterns
 function Grok:fetch(pattern, n, p)
@@ -19,13 +22,18 @@ function Grok:fetch(pattern, n, p)
 	self.pats = self.pats or {}
 
 	for name in string.gmatch(pattern, "%u+%d*%u*") do
-		if string.len(name) >= 2 then
+		if string.len(name) >= min_length then
 			local pat = self.pats[name] or patterns[name] or nil
 			if pat ~= nil then
 				if n[name] == nil then
 					-- save the pattern locally if its in the list
 					n[name] = true
-					table.insert(p, name..' <- '..pat)
+					if #p == 0 then
+						-- wrap the top level pattern in table capture
+						table.insert(p, string.format("%s <- {| %s |}", name, pat))
+					else
+						table.insert(p, string.format("%s <- %s", name, pat))
+					end
 					self:fetch(pat, n, p)
 				end
 			else

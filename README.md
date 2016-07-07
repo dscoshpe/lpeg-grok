@@ -35,7 +35,7 @@ Patterns are stored in a Lua table by their name, like so:
 
 ```lua
 patterns = {
-	TIMESTAMP = "{| {:date: (YEAR '/' MONTHNUM2 '/' MONTHDAY) :} ' ' {:time: TIME :} |}",
+	TIMESTAMP = "{:date: (YEAR '/' MONTHNUM2 '/' MONTHDAY) :} ' ' {:time: TIME :}",
 	YEAR = "(%d%d)(%d%d)?",
 	MONTHNUM2 = "('0'[1-9]/'1'[0-2])",
 	MONTHDAY = "(('0'[1-9])/([12][0-9])/('3'[01])/[1-9])",
@@ -70,7 +70,7 @@ would return:
 # TODO
 
 - [ ] verify all of the patterns in the default collection
-- [ ] finish the testing script (busted?)
+- [x] finish the testing script (busted?)
 - [x] implement installation procedure (luarocks)
 - [ ] add an optional 'optimize' step in case optimizing lpeg is used
 - [ ] add automated documentation

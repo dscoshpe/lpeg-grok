@@ -2,14 +2,14 @@
 	Test suite for the lpeg-grok module.
 --]]
 
-local grok = require("lpeg-grok")
+local grok = require("grok")
 
 local testcases = {
 	{
 		description = "p0f output",
 		name = "POF",
 		patterns = {
-		   POF = "{| '[' {:date: (YEAR '/' MONTHNUM2 '/' MONTHDAY) :} ' ' {:time: TIME :} '] ' {:fields: {| (POFFIELD '|'?)+ |} :} |}",
+		   POF = "'[' {:date: (YEAR '/' MONTHNUM2 '/' MONTHDAY) :} ' ' {:time: TIME :} '] ' {:fields: {| (POFFIELD '|'?)+ |} :}",
 		   POFFIELD = "{| {:name: POFKEY :} '=' {:value: POFVALUE :} |}",
 		   POFKEY = "[^=]+",
 		   POFVALUE = "[^|%nl]*"
@@ -37,7 +37,8 @@ local testcases = {
 	{
 		description = "simple syslog line",
 		name = "SYSLOGLINE",
-		patterns = {
+		patterns = {},
+		samples = {
 			{ -- #1
 				input = "Mar 16 00:01:25 evita postfix/smtpd[1713]: connect from camomile.cloud9.net[168.100.1.3]",
 				verify = {
@@ -46,7 +47,7 @@ local testcases = {
 					timestamp = "Mar 16 00:01:25",
 					message = "connect from camomile.cloud9.net[168.100.1.3]",
 					program = "postfix/smtpd",
-					pid = 1713
+					pid = "1713"
 				}
 			}
 		}
@@ -54,19 +55,34 @@ local testcases = {
 	{
 		description = "ietf 5424 syslog line",
 		name = "SYSLOG5424LINE",
-		patterns = {
+		patterns = {},
+		samples = {
 			{ -- #1
-				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar"][id2 baz="something"] Hello, syslog.',
+				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - [id1 foo="bar" blah="zay"][id2 baz="something"] Hello, syslog.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
-					syslog5424_proc = 4123,
+					syslog5424_proc = "4123",
 					syslog5424_msgid = nil,
-					syslog5424_sd = '[id1 foo="bar"][id2 baz="something"]',
+					syslog5424_sd = {
+						[1] = {
+							id = "id1",
+							params = {
+								[1] = { name = "foo", value = "bar" },
+								[2] = { name = "blah", value = "zay" }
+							}
+						},
+						[2] = {
+							id = "id2",
+							params = {
+								[1] = { name = "baz", value = "something" }
+							}
+						}
+					},
 					syslog5424_msg = "Hello, syslog."
 				}
 			},
@@ -74,14 +90,21 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug - - [id1 foo="bar"] No process ID.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
 					syslog5424_proc = nil,
 					syslog5424_msgid = nil,
-					syslog5424_sd = '[id1 foo="bar"]',
+					syslog5424_sd = {
+						[1] = {
+							id = "id1",
+							params = {
+								[1] = { name = "foo", value = "bar" }
+							}
+						}
+					},
 					syslog5424_msg = "No process ID."
 				}
 			},
@@ -89,12 +112,12 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 - - No structured data.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
-					syslog5424_proc = 4123,
+					syslog5424_proc = "4123",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "No structured data."
@@ -104,8 +127,8 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug - - - No PID or SD.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
@@ -119,12 +142,12 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug 4123 -  Missing structured data.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
-					syslog5424_proc = 4123,
+					syslog5424_proc = "4123",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "Missing structured data."
@@ -134,12 +157,12 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug  4123 - - Additional spaces.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
-					syslog5424_proc = 4123,
+					syslog5424_proc = "4123",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "Additional spaces."
@@ -149,12 +172,12 @@ local testcases = {
 				input = '<191>1 2009-06-30T18:30:00+02:00 paxton.local grokdebug  4123 -  Additional spaces and missing SD.',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 191,
-					syslog5424_ver = 1,
+					syslog5424_pri = "191",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2009-06-30T18:30:00+02:00",
 					syslog5424_host = "paxton.local",
 					syslog5424_app = "grokdebug",
-					syslog5424_proc = 4123,
+					syslog5424_proc = "4123",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "Additional spaces and missing SD."
@@ -164,12 +187,12 @@ local testcases = {
 				input = '<30>1 2014-04-04T16:44:07+02:00 osctrl01 dnsmasq-dhcp 8048 - -  Appname contains a dash',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 30,
-					syslog5424_ver = 1,
+					syslog5424_pri = "30",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2014-04-04T16:44:07+02:00",
 					syslog5424_host = "osctrl01",
 					syslog5424_app = "dnsmasq-dhcp",
-					syslog5424_proc = 8048,
+					syslog5424_proc = "8048",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "Appname contains a dash"
@@ -179,12 +202,12 @@ local testcases = {
 				input = '<30>1 2014-04-04T16:44:07+02:00 osctrl01 - 8048 - -  Appname is nil',
 				verify = {
 					tags = nil,
-					syslog5424_pri = 30,
-					syslog5424_ver = 1,
+					syslog5424_pri = "30",
+					syslog5424_ver = "1",
 					syslog5424_ts = "2014-04-04T16:44:07+02:00",
 					syslog5424_host = "osctrl01",
 					syslog5424_app = nil,
-					syslog5424_proc = 8048,
+					syslog5424_proc = "8048",
 					syslog5424_msgid = nil,
 					syslog5424_sd = nil,
 					syslog5424_msg = "Appname is nil"
@@ -206,8 +229,15 @@ local function checkRecord(known, unknown)
 				if checkRecord(known[k], unknown[k]) == nil then return nil end
 			end
 		else
+			if type(unknown) ~= 'table' then
+				print("ERROR: the returned matches don't make sense!")
+				print(unknown)
+				return nil
+			end
 			if known[k] ~= unknown[k] then
-				print("ERROR: key '"..k.."' failed, expected '"..known[k].."' ("..type(known[k])..") got '"..unknown[k].."' ("..type(unknown[k])..")")
+				local tmpk = known[k] or "nil"
+				local tmpu = unknown[k] or "nil"
+				print("ERROR: key '"..k.."' failed, expected '"..tmpk.."' got '"..tmpu.."'")
 				return nil
 			end
 		end
@@ -223,7 +253,8 @@ for i,tc in pairs(testcases) do
 
 	if p then
 		for j,s in pairs(tc.samples) do
-			if checkRecord(s.verify, p:match(s.input)) then print("---> ok") else failed = true end
+			local matches = p:match(s.input)
+			if checkRecord(s.verify, matches) then print("---> #"..i.."."..j..": ok") else failed = true end
 		end
 	else
 		print("ERROR: failed to gather a pattern for '"..tc.name.."' from the available patterns!")
