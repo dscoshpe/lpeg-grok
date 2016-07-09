@@ -12,12 +12,12 @@ description = {
 }
 dependencies = {
     "lua ~> 5.1",
-    "lpeg >= 1",
-    "luaml"
+    "lpeg >= 1"
 }
 build = {
     type = "builtin",
     modules = {
-        ["lpeg-grok"] = "grok.lua"
+        ["lpeg-grok"] = "grok.lua",
+        ["lpeg-grok.patterns"] = "lpeg-grok/patterns.lua"
     }
 }

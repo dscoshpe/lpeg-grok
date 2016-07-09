@@ -8,7 +8,7 @@ local table = require("table")
 -- uses the LPeg 're' module
 local re = require("re")
 -- load the default patterns library
-local patterns = require("luaml").decodeFile("patterns.lua")
+local patterns = require("lpeg-grok.patterns")
 
 local Grok = {}
 
